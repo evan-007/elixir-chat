@@ -7,7 +7,7 @@ defmodule PLMLive.Chats.Room do
   schema "rooms" do
     field :name, :string
     has_many :room_memberships, PLMLive.Chats.RoomMembership
-    has_many :users, through: [:room_memberships, :user]
+    many_to_many :users, PLMLive.Chats.User, join_through: PLMLive.Chats.RoomMembership
 
     timestamps()
   end
@@ -17,7 +17,6 @@ defmodule PLMLive.Chats.Room do
     room
     |> cast(attrs, [:name])
     |> unique_constraint(:name)
-    |> cast_assoc(:room_memberships)
-    # |> validate_required([:name])
+    |> cast_assoc(:users, required: true)
   end
 end
