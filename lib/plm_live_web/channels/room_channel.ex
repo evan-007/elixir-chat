@@ -1,3 +1,5 @@
+require IEx
+
 defmodule PLMLiveWeb.RoomChannel do
   use Phoenix.Channel
   alias PLMLiveWeb.Presence
@@ -28,6 +30,13 @@ defmodule PLMLiveWeb.RoomChannel do
       uuid: generate(),
       timestamp: :os.system_time(:milli_seconds)
     }
+
+    room_name = socket.topic
+    |> String.split(":")
+    |> List.last
+    room = Chats.get_room_by_name(room_name)
+    log_message(%{content: body, user_id: 1, room_id: room.id}) # fix user_id
+
     {:noreply, socket}
   end
 
@@ -60,5 +69,9 @@ defmodule PLMLiveWeb.RoomChannel do
       _ ->
         {:ok}
     end
+  end
+
+  defp log_message(message) do
+    Chats.create_message(message)
   end
 end

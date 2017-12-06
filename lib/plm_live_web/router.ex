@@ -25,5 +25,6 @@ defmodule PLMLiveWeb.Router do
 
     resources "/rooms", RoomController, except: [:new, :edit]
     resources "/users", UserController, except: [:new, :edit]
+    resources "/messages", MessageController, except: [:new, :edit]
   end
 end
