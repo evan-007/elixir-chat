@@ -38,6 +38,8 @@ defmodule PLMLiveWeb.Endpoint do
     key: "_plm_live_key",
     signing_salt: "tQNm58bf"
 
+  plug CORSPlug
+
   plug PLMLiveWeb.Router
 
   @doc """
