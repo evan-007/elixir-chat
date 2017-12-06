@@ -1,3 +1,4 @@
+require    IEx
 defmodule PLMLiveWeb.RoomChannel do
   use Phoenix.Channel
   alias PLMLiveWeb.Presence
@@ -10,6 +11,7 @@ defmodule PLMLiveWeb.RoomChannel do
     {:ok, user} = create_user(%{ login: socket.assigns.user, plm_id: socket.assigns.plm_id })
     socket = assign(socket, :user_id, user.id)
     send(self(), :after_join)
+    send(self(), :send_message_history)
     {:ok, socket}
   end
 
@@ -19,6 +21,7 @@ defmodule PLMLiveWeb.RoomChannel do
     {:ok, user} = create_user(%{ login: socket.assigns.user, plm_id: socket.assigns.plm_id })
     socket = assign(socket, :user_id, user.id)
     send(self(), :after_join)
+    send(self(), :send_message_history)
     {:ok, socket}
   end
 
@@ -31,14 +34,18 @@ defmodule PLMLiveWeb.RoomChannel do
       body: body,
       user: user,
       uuid: generate(),
-      timestamp: :os.system_time(:milli_seconds)
+      timestamp: :os.system_time(:milli_seconds),
     }
 
     room_name = socket.topic
     |> String.split(":")
     |> List.last
     room = Chats.get_room_by_name(room_name)
-    log_message(%{content: body, user_id: socket.assigns.user_id, room_id: room.id})
+
+    log_message(%{content: body,
+      user_id: socket.assigns.user_id,
+      room_id: room.id,
+    })
 
     {:noreply, socket}
   end
@@ -63,6 +70,17 @@ defmodule PLMLiveWeb.RoomChannel do
     {:noreply, socket}
   end
 
+  def handle_info(:send_message_history, socket) do
+    room_name = socket.topic
+    |> String.split(":")
+    |> List.last
+    messages = Chats.recent_messages_for_room(room_name)
+               |> Enum.map(&serialize_message&1)
+    broadcast! socket, "message_history", %{messages: messages}
+
+    {:noreply, socket}
+  end
+
   defp create_user(user_attrs) do
     user = Chats.get_plm_user!(user_attrs.plm_id)
            |> List.first
@@ -76,5 +94,14 @@ defmodule PLMLiveWeb.RoomChannel do
 
   defp log_message(message) do
     Chats.create_message(message)
+  end
+
+  defp serialize_message(message) do
+    %{
+      body: message.content,
+      uuid: message.id,
+      user: message.user.login,
+      timestamp: message.inserted_at,
+    }
   end
 end

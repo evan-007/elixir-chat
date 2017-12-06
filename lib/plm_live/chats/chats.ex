@@ -247,6 +247,26 @@ defmodule PLMLive.Chats do
   end
 
   @doc """
+  Returns the list of recent messages for a room.
+
+  ## Examples
+
+      iex> list_messages()
+      [%Message{}, ...]
+
+  """
+  def recent_messages_for_room(room_name) do
+    room = get_room_by_name(room_name)
+    room_id = room.id
+    query = from m in Message,
+      where: [room_id: ^room_id],
+      limit: 10,
+      order_by: m.inserted_at,
+      preload: [:user]
+    Repo.all(query)
+  end
+
+  @doc """
   Gets a single message.
 
   Raises `Ecto.NoResultsError` if the Message does not exist.

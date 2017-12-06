@@ -7,6 +7,7 @@ defmodule PLMLive.Chats.User do
   schema "users" do
     field :login, :string
     field :plm_id, :integer
+    has_many :messages, PLMLive.Chats.Message
 
     timestamps()
   end
