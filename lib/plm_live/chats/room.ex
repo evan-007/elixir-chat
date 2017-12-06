@@ -17,6 +17,5 @@ defmodule PLMLive.Chats.Room do
     room
     |> cast(attrs, [:name])
     |> unique_constraint(:name)
-    |> cast_assoc(:users, required: true)
   end
 end
