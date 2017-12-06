@@ -1,5 +1,3 @@
-require IEx
-
 defmodule PLMLiveWeb.RoomChannel do
   use Phoenix.Channel
   alias PLMLiveWeb.Presence
@@ -9,12 +7,17 @@ defmodule PLMLiveWeb.RoomChannel do
   def join("room:lobby", message, socket) do
     socket = assign(socket, :user, message["user"])
     socket = assign(socket, :plm_id, message["plm_id"])
+    {:ok, user} = create_user(%{ login: socket.assigns.user, plm_id: socket.assigns.plm_id })
+    socket = assign(socket, :user_id, user.id)
     send(self(), :after_join)
     {:ok, socket}
   end
 
   def join("room:" <> private_room_id, message, socket) do
     socket = assign(socket, :user, message["user"])
+    socket = assign(socket, :plm_id, message["plm_id"])
+    {:ok, user} = create_user(%{ login: socket.assigns.user, plm_id: socket.assigns.plm_id })
+    socket = assign(socket, :user_id, user.id)
     send(self(), :after_join)
     {:ok, socket}
   end
@@ -35,7 +38,7 @@ defmodule PLMLiveWeb.RoomChannel do
     |> String.split(":")
     |> List.last
     room = Chats.get_room_by_name(room_name)
-    log_message(%{content: body, user_id: 1, room_id: room.id}) # fix user_id
+    log_message(%{content: body, user_id: socket.assigns.user_id, room_id: room.id})
 
     {:noreply, socket}
   end
@@ -57,17 +60,17 @@ defmodule PLMLiveWeb.RoomChannel do
       user: socket.assigns.user,
       plm_id: socket.assigns.plm_id,
     })
-    create_user(%{ login: socket.assigns.user, plm_id: socket.assigns.plm_id })
     {:noreply, socket}
   end
 
   defp create_user(user_attrs) do
     user = Chats.get_plm_user!(user_attrs.plm_id)
-    case length(user) do
-      0 ->
+           |> List.first
+    case user do
+      nil ->
         Chats.create_user(user_attrs)
       _ ->
-        {:ok}
+        {:ok, user}
     end
   end
 
