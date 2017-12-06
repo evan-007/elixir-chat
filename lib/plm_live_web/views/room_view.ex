@@ -12,6 +12,12 @@ defmodule PLMLiveWeb.RoomView do
 
   def render("room.json", %{room: room}) do
     %{id: room.id,
-      name: room.name}
+      name: room.name,
+      users: Enum.map(room.users, &users_json(&1)) # this is not the right way to do it
+    }
+  end
+
+  defp users_json(user) do
+    user.login
   end
 end

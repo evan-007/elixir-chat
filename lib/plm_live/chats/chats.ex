@@ -124,6 +124,7 @@ defmodule PLMLive.Chats do
   """
   def list_rooms do
     Repo.all(Room)
+    |> Repo.preload(:users)
   end
 
   @doc """
@@ -256,12 +257,15 @@ defmodule PLMLive.Chats do
 
   """
   def recent_messages_for_room(room_name) do
-    room = get_room_by_name(room_name)
+    room = case room_name do
+      "lobby" ->
+        get_room_by_name(room_name)
+      _ -> get_room!(room_name) # is actually an id :(
+    end
     room_id = room.id
     query = from m in Message,
       where: [room_id: ^room_id],
-      limit: 10,
-      order_by: m.inserted_at,
+      order_by: [asc: m.inserted_at],
       preload: [:user]
     Repo.all(query)
   end
@@ -345,5 +349,101 @@ defmodule PLMLive.Chats do
   """
   def change_message(%Message{} = message) do
     Message.changeset(message, %{})
+  end
+
+  alias PLMLive.Chats.RoomMembership
+
+  @doc """
+  Returns the list of room_memberships.
+
+  ## Examples
+
+      iex> list_room_memberships()
+      [%RoomMembership{}, ...]
+
+  """
+  def list_room_memberships do
+    Repo.all(RoomMembership)
+  end
+
+  @doc """
+  Gets a single room_membership.
+
+  Raises `Ecto.NoResultsError` if the Room membership does not exist.
+
+  ## Examples
+
+      iex> get_room_membership!(123)
+      %RoomMembership{}
+
+      iex> get_room_membership!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_room_membership!(id), do: Repo.get!(RoomMembership, id)
+
+  @doc """
+  Creates a room_membership.
+
+  ## Examples
+
+      iex> create_room_membership(%{field: value})
+      {:ok, %RoomMembership{}}
+
+      iex> create_room_membership(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_room_membership(attrs \\ %{}) do
+    %RoomMembership{}
+    |> RoomMembership.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a room_membership.
+
+  ## Examples
+
+      iex> update_room_membership(room_membership, %{field: new_value})
+      {:ok, %RoomMembership{}}
+
+      iex> update_room_membership(room_membership, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_room_membership(%RoomMembership{} = room_membership, attrs) do
+    room_membership
+    |> RoomMembership.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a RoomMembership.
+
+  ## Examples
+
+      iex> delete_room_membership(room_membership)
+      {:ok, %RoomMembership{}}
+
+      iex> delete_room_membership(room_membership)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_room_membership(%RoomMembership{} = room_membership) do
+    Repo.delete(room_membership)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking room_membership changes.
+
+  ## Examples
+
+      iex> change_room_membership(room_membership)
+      %Ecto.Changeset{source: %RoomMembership{}}
+
+  """
+  def change_room_membership(%RoomMembership{} = room_membership) do
+    RoomMembership.changeset(room_membership, %{})
   end
 end

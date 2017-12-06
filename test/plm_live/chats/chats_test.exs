@@ -184,4 +184,62 @@ defmodule PLMLive.ChatsTest do
       assert %Ecto.Changeset{} = Chats.change_message(message)
     end
   end
+
+  describe "room_memberships" do
+    alias PLMLive.Chats.RoomMembership
+
+    @valid_attrs %{}
+    @update_attrs %{}
+    @invalid_attrs %{}
+
+    def room_membership_fixture(attrs \\ %{}) do
+      {:ok, room_membership} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Chats.create_room_membership()
+
+      room_membership
+    end
+
+    test "list_room_memberships/0 returns all room_memberships" do
+      room_membership = room_membership_fixture()
+      assert Chats.list_room_memberships() == [room_membership]
+    end
+
+    test "get_room_membership!/1 returns the room_membership with given id" do
+      room_membership = room_membership_fixture()
+      assert Chats.get_room_membership!(room_membership.id) == room_membership
+    end
+
+    test "create_room_membership/1 with valid data creates a room_membership" do
+      assert {:ok, %RoomMembership{} = room_membership} = Chats.create_room_membership(@valid_attrs)
+    end
+
+    test "create_room_membership/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Chats.create_room_membership(@invalid_attrs)
+    end
+
+    test "update_room_membership/2 with valid data updates the room_membership" do
+      room_membership = room_membership_fixture()
+      assert {:ok, room_membership} = Chats.update_room_membership(room_membership, @update_attrs)
+      assert %RoomMembership{} = room_membership
+    end
+
+    test "update_room_membership/2 with invalid data returns error changeset" do
+      room_membership = room_membership_fixture()
+      assert {:error, %Ecto.Changeset{}} = Chats.update_room_membership(room_membership, @invalid_attrs)
+      assert room_membership == Chats.get_room_membership!(room_membership.id)
+    end
+
+    test "delete_room_membership/1 deletes the room_membership" do
+      room_membership = room_membership_fixture()
+      assert {:ok, %RoomMembership{}} = Chats.delete_room_membership(room_membership)
+      assert_raise Ecto.NoResultsError, fn -> Chats.get_room_membership!(room_membership.id) end
+    end
+
+    test "change_room_membership/1 returns a room_membership changeset" do
+      room_membership = room_membership_fixture()
+      assert %Ecto.Changeset{} = Chats.change_room_membership(room_membership)
+    end
+  end
 end

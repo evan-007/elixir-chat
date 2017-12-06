@@ -8,6 +8,8 @@ defmodule PLMLive.Chats.User do
     field :login, :string
     field :plm_id, :integer
     has_many :messages, PLMLive.Chats.Message
+    has_many :room_memberships, PLMLive.Chats.RoomMembership
+    has_many :rooms, through: [:room_memberships, :room]
 
     timestamps()
   end

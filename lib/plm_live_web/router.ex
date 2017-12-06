@@ -23,8 +23,10 @@ defmodule PLMLiveWeb.Router do
   scope "/api", PLMLiveWeb do
     pipe_through :api
 
+    # none of these are actually used yet
     resources "/rooms", RoomController, except: [:new, :edit]
     resources "/users", UserController, except: [:new, :edit]
     resources "/messages", MessageController, except: [:new, :edit]
+    resources "/room_memberships", RoomMembershipController, except: [:new, :edit]
   end
 end

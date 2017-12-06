@@ -1,4 +1,3 @@
-require    IEx
 defmodule PLMLiveWeb.RoomChannel do
   use Phoenix.Channel
   alias PLMLiveWeb.Presence
@@ -16,6 +15,7 @@ defmodule PLMLiveWeb.RoomChannel do
   end
 
   def join("room:" <> private_room_id, message, socket) do
+    # TODO: create room if not exists
     socket = assign(socket, :user, message["user"])
     socket = assign(socket, :plm_id, message["plm_id"])
     {:ok, user} = create_user(%{ login: socket.assigns.user, plm_id: socket.assigns.plm_id })
@@ -40,7 +40,11 @@ defmodule PLMLiveWeb.RoomChannel do
     room_name = socket.topic
     |> String.split(":")
     |> List.last
-    room = Chats.get_room_by_name(room_name)
+    room = case room_name do
+      "lobby" ->
+        Chats.get_room_by_name(room_name)
+      _ -> Chats.get_room!(room_name) # is actually an id :(
+    end
 
     log_message(%{content: body,
       user_id: socket.assigns.user_id,
@@ -74,11 +78,15 @@ defmodule PLMLiveWeb.RoomChannel do
     room_name = socket.topic
     |> String.split(":")
     |> List.last
-    messages = Chats.recent_messages_for_room(room_name)
+    messages = get_messages(room_name)
                |> Enum.map(&serialize_message&1)
     broadcast! socket, "message_history", %{messages: messages}
 
     {:noreply, socket}
+  end
+
+  defp get_messages(room_name) do
+    Chats.recent_messages_for_room(room_name)
   end
 
   defp create_user(user_attrs) do
