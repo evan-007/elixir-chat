@@ -1,6 +1,6 @@
 defmodule PLMLiveWeb.RoomChannel do
   use Phoenix.Channel
-  # alias PLMLiveWeb.Presence
+  alias PLMLiveWeb.Presence
   import Ecto.UUID, only: [generate: 0]
 
   def join("room:lobby", message, socket) do
@@ -40,11 +40,11 @@ defmodule PLMLiveWeb.RoomChannel do
   end
 
   def handle_info(:after_join, socket) do
-    # push socket, "presence_state", Presence.list(socket)
-    # {:ok, _} = Presence.track(socket, socket.assigns.user, %{
-    #   online_at: inspect(System.system_time(:milli_seconds)),
-    #   user: socket.assigns.user
-    # })
+    push socket, "presence_state", Presence.list(socket)
+    {:ok, _} = Presence.track(socket, socket.assigns.user, %{
+      online_at: inspect(System.system_time(:milli_seconds)),
+      user: socket.assigns.user
+    })
     {:noreply, socket}
   end
 end

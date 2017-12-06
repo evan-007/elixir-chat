@@ -12,6 +12,8 @@ defmodule PLMLive.Application do
       supervisor(PLMLive.Repo, []),
       # Start the endpoint when the application starts
       supervisor(PLMLiveWeb.Endpoint, []),
+      # Start Presence
+      supervisor(PLMLiveWeb.Presence, []),
       # Start your own worker by calling: PLMLive.Worker.start_link(arg1, arg2, arg3)
       # worker(PLMLive.Worker, [arg1, arg2, arg3]),
     ]
