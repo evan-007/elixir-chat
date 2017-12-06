@@ -28,7 +28,7 @@ config :logger, level: :info
 config :plm_live, PLMLive.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: System.get_env("DATABASE_URL"),
-  pool_size: 15,
+  pool_size: 10,
   ssl: true
 
 # ## SSL Support
