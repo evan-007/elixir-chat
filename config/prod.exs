@@ -15,7 +15,7 @@ use Mix.Config
 # which you typically run after static files are built.
 config :plm_live, PLMLiveWeb.Endpoint,
   load_from_system_env: true,
-  check_origin: ["https://wow-chat.stage.patientslikeme.com"],
+  check_origin: false,
   url: [scheme: "https", host: "thawing-brook-24305.herokuapp.com", port: 443],
   force_ssl: [rewrite_on: [:x_forwarded_proto]],
   cache_static_manifest: "priv/static/cache_manifest.json",
