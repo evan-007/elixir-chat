@@ -14,6 +14,17 @@ defmodule PLMLiveWeb.RoomChannel do
     {:ok, socket}
   end
 
+  def join("room:online", message, socket) do
+    # no messages, only exists to track who is online
+    socket = assign(socket, :user, message["user"])
+    socket = assign(socket, :plm_id, message["plm_id"])
+    {:ok, user} = create_user(%{ login: socket.assigns.user, plm_id: socket.assigns.plm_id })
+    socket = assign(socket, :user_id, user.id)
+    # sync presence
+    send(self(), :after_join)
+    {:ok, socket}
+  end
+
   def join("room:" <> private_room_id, message, socket) do
     # TODO: create room if not exists
     socket = assign(socket, :user, message["user"])
