@@ -13,11 +13,8 @@ defmodule PLMLiveWeb.RoomController do
   end
 
   def create(conn, %{"room" => room_params}) do
-    with {:ok, %Room{} = room} <- Chats.create_room_for_users(room_params) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", room_path(conn, :show, room))
-      |> render("show.json", room: room)
+    with {:ok, _} <- Chats.create_room_for_users(room_params) do
+      send_resp(conn, 201, "")
     end
   end
 

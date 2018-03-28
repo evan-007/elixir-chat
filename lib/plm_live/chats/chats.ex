@@ -42,8 +42,28 @@ defmodule PLMLive.Chats do
   """
 
   def get_plm_user!(plm_id) do
-    query = from u in User, where: [plm_id: ^plm_id] # wtf pin operator
+    query = from u in User, where: [plm_id: ^plm_id]
     Repo.all(query)
+  end
+
+  @doc """
+  Gets a user by login
+  """
+
+  def get_user_by_login!(login) do
+    query = from u in User, where: [login: ^login]
+    Repo.all(query)
+    |> List.first()
+  end
+
+  @doc """
+  returns a list of all chats the user is involved in
+  """
+
+  def get_plm_user_chats!(plm_id) do
+    query = from u in User, where: [plm_id: ^plm_id]
+    Repo.all(query)
+    |> Repo.preload(:rooms)
   end
 
   @doc """
@@ -186,6 +206,25 @@ defmodule PLMLive.Chats do
   end
 
   @doc """
+  creates a chatroom for two or more user ids
+  curl -H "Content-Type: application/json" -d '{"room": { "user_ids": [1,2]}}' -X POST localhost:4000/api/rooms
+  """
+
+  def create_room_for_users(attrs \\ %{}) do
+    name = attrs["user_ids"]
+           |> Enum.join("-")
+    room_attrs = %{name: name}
+    {:ok, room} = %Room{}
+                  |> Room.changeset(room_attrs)
+                  |> Repo.insert
+    user_ids = attrs["user_ids"]
+    Enum.each(user_ids, fn(id) ->
+      {:ok, membership} = %{user_id: id, room_id: room.id}
+                          |> create_room_membership()
+    end)
+  end
+
+  @doc """
   Updates a room.
 
   ## Examples
@@ -265,7 +304,7 @@ defmodule PLMLive.Chats do
     room_id = room.id
     query = from m in Message,
       where: [room_id: ^room_id],
-      order_by: [asc: m.inserted_at],
+      order_by: [desc: m.inserted_at],
       preload: [:user]
     Repo.all(query)
   end

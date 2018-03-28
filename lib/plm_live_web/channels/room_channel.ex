@@ -65,10 +65,12 @@ defmodule PLMLiveWeb.RoomChannel do
     {:noreply, socket}
   end
 
-  def handle_in("new_user", %{"user" => user}, socket) do
+  def handle_in("new_user", %{"user" => login}, socket) do
+    user = Chats.get_user_by_login!(login)
     # this should be in a handle_info clause w/after_join
     broadcast! socket, "new_user", %{
-      user: user,
+      user: user.login,
+      user_id: user.plm_id,
       uuid: generate(),
       timestamp: :os.system_time(:milli_seconds)
     }
