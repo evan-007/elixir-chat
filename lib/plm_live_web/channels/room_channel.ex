@@ -70,6 +70,7 @@ defmodule PLMLiveWeb.RoomChannel do
     # this should be in a handle_info clause w/after_join
     broadcast! socket, "new_user", %{
       user: user.login,
+      system: true,
       user_id: user.plm_id,
       uuid: generate(),
       timestamp: :os.system_time(:milli_seconds)
